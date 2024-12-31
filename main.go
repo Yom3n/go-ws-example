@@ -20,7 +20,10 @@ func (wsh webSocketHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error %s when upgrading connection to ws", err)
 		return
 	}
-	defer c.Close()
+	defer func() {
+		log.Println("Closing connection")
+		c.Close()
+	}()
 	for {
 		mt, msg, err := c.ReadMessage()
 		if err != nil {
@@ -39,6 +42,7 @@ func (wsh webSocketHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			err = c.WriteMessage(websocket.TextMessage, []byte("You did not say magic word"))
 			if err != nil {
 				log.Printf("Error %s while sending message to the client", err)
+				return
 			}
 			continue
 		}
